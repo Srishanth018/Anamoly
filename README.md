@@ -34,7 +34,7 @@ A production-grade cybersecurity analytics platform that learns normal user beha
 
 ---
 
-## 🌐 Fetching & Testing Real-World Production Datasets
+## Fetching & Testing Real-World Production Datasets
 
 You can run the entire platform directly on authentic production log data:
 
