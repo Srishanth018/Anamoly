@@ -4,7 +4,7 @@ A production-grade cybersecurity analytics platform that learns normal user beha
 
 ---
 
-## 🌟 Key System Capabilities
+## Key System Capabilities
 
 1. **Multi-Layered Detection Engine**:
    - **Deterministic Heuristic Rules**: Detects brute force bursts, off-hours access, unseen IPs/devices, USB connections, and privilege escalations.
@@ -31,7 +31,7 @@ A production-grade cybersecurity analytics platform that learns normal user beha
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 behavioral-security-anomaly-detection/
@@ -108,7 +108,7 @@ behavioral-security-anomaly-detection/
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Install Dependencies
 ```bash
