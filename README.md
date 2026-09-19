@@ -1,6 +1,6 @@
 # Behavioral Security Log Anomaly Detection & Threat Analytics Platform
 
-A production-grade cybersecurity analytics platform that learns normal user behavior from authentication and system activity logs, detects behavioral deviations using statistical, rule-based, machine learning (Isolation Forest), and sequence-based methods, assigns explainable risk scores (0–100), maps detections to MITRE ATT&CK techniques, executes automated SOAR playbook responses, and provides an interactive investigation dashboard for SOC security analysts.
+A production-grade cybersecurity analytics platform that learns normal user behavior from authentication and system activity logs, detects behavioral deviations using statistical, rule-based, machine learning (Isolation Forest), and sequence-based methods, assigns explainable risk scores (0–100), maps detections to MITRE ATT&CK techniques, executes automated SOAR playbook responses, supports **authentic real-world production security log datasets**, and provides an interactive investigation dashboard for SOC security analysts.
 
 ---
 
@@ -15,95 +15,47 @@ A production-grade cybersecurity analytics platform that learns normal user beha
    - **Individual Baseline**: Normal working hours, primary IPs, authorized devices, and average daily download volume.
    - **Peer-Group Baseline**: Departmental/role norm comparison to flag out-of-role resource access.
    - **Behavioral Drift Detection**: Tracks 7-day vs 30-day rolling activity to spot gradual volume escalation.
-3. **Explainable Risk & Severity Scoring**:
+3. **Authentic Real-World Production Log Ingestion**:
+   - Automated fetcher & parser (`data/fetch_real_public_dataset.py`) to download and normalize **authentic real-world production Linux authentication logs (`/var/log/auth.log`)** and **real Windows workstation event logs** from the Loghub Benchmark.
+   - Converter (`data/load_real_dataset.py`) to parse **CERT Insider Threat Dataset (r4.2/r5.2)**, **LANL Telemetry**, or arbitrary enterprise security CSVs.
+4. **Explainable Risk & Severity Scoring**:
    - Calibrates combined signals into an explainable 0–100 Risk Score categorized into `LOW` (0-25), `MEDIUM` (26-50), `HIGH` (51-75), and `CRITICAL` (76-100).
    - Provides transparent point attribution (+15 Off-hours, +20 ML Anomaly, +25 Exfiltration Volume).
-4. **MITRE ATT&CK Mapping & Threat Intelligence**:
+5. **MITRE ATT&CK Mapping & Threat Intelligence**:
    - Automatically tags alerts with relevant MITRE ATT&CK techniques (`T1078 Valid Accounts`, `T1110 Brute Force`, `T1068 Privilege Escalation`, `T1048 Exfiltration`, `T1091 Removable Media`, `T1485 Data Destruction`, `T1071 Application Protocol`).
-5. **Automated SOAR Playbook Action Triggers**:
+6. **Automated SOAR Playbook Action Triggers**:
    - Allows analysts to execute real-time mitigation actions (`Revoke Credentials`, `Block Source IP`, `Quarantine Device`, `Mark False Positive`) updating alert statuses live in SQLite.
-6. **Executive Incident Report Generator**:
+7. **Executive Incident Report Generator**:
    - Generates and downloads formal Markdown Executive Incident Reports (`.md`) summarizing incident metadata, timeline, risk breakdown, and recommended mitigations.
-7. **Real-time Stream API Ingestor**:
+8. **Real-time Stream API Ingestor**:
    - Ingests arbitrary real-time JSON log payloads directly into the detection pipeline and database (`src/ingestion/api_ingestor.py`).
-8. **Interactive Dark-Themed SOC Dashboard**:
+9. **Interactive Dark-Themed SOC Dashboard**:
    - Multi-page Streamlit dashboard featuring Security Overview, Threat Analytics & Drift, User Profile Investigation, Alert Triage with SOAR triggers, and SQL Threat Hunting.
 
 ---
 
-## Repository Structure
+## 🌐 Fetching & Testing Real-World Production Datasets
 
+You can run the entire platform directly on authentic production log data:
+
+### Option A: Fetch & Run on Authentic Real Production Logs (Linux Auth + Windows Logs)
+Downloads authentic, real-world production logs from Loghub (LogPAI Benchmark) and runs the entire pipeline:
+```bash
+python data/fetch_real_public_dataset.py
+python run_pipeline.py
 ```
-behavioral-security-anomaly-detection/
-├── config.yaml                     # Risk weights, detection thresholds, parameters
-├── requirements.txt                # Python dependencies
-├── README.md                       # Documentation
-├── run_pipeline.py                 # CLI tool to execute end-to-end telemetry ingestion & alert scoring
-│
-├── data/
-│   ├── generate_data.py            # Synthetic enterprise security telemetry log generator
-│   ├── raw/                        # Raw generated log CSVs
-│   └── processed/                  # Processed normalized events CSV
-│
-├── database/
-│   ├── schema.sql                  # Database schema (events, users, sessions, alerts, baselines)
-│   └── security.db                 # SQLite database storage
-│
-├── notebooks/
-│   └── 01_threat_eda.ipynb         # Exploratory Data Analysis & Model Evaluation Notebook
-│
-├── src/
-│   ├── ingestion/
-│   │   ├── log_loader.py           # Multi-format log loader (CSV/JSON/JSONL)
-│   │   ├── log_normalizer.py       # Standard event schema normalizer
-│   │   └── api_ingestor.py         # Real-time Stream JSON payload ingestor
-│   ├── features/
-│   │   ├── temporal_features.py    # Work hours, after-hours, weekend indicators
-│   │   ├── user_features.py        # Failed login bursts & rolling window counts
-│   │   ├── network_features.py     # Unseen IP, alien subnet, and device flags
-│   │   ├── session_features.py     # Session byte totals & event counts
-│   │   └── deviation_features.py   # Z-score & percentile deviations
-│   ├── behavior/
-│   │   ├── user_baseline.py        # Individual user baseline modeler
-│   │   ├── peer_baseline.py        # Departmental peer group baseline builder
-│   │   └── drift_detector.py       # 7-day vs 30-day rolling behavioral drift calculator
-│   ├── detection/
-│   │   ├── rule_engine.py          # Deterministic security rule engine
-│   │   ├── statistical_detector.py # Personalized statistical anomaly engine
-│   │   ├── ml_detector.py          # Isolation Forest ML model wrapper
-│   │   └── sequence_detector.py    # Multi-event session attack sequence detector
-│   ├── scoring/
-│   │   ├── risk_engine.py          # Explainable 0-100 risk engine
-│   │   └── severity.py             # Risk categorization (LOW, MEDIUM, HIGH, CRITICAL)
-│   ├── enrichment/
-│   │   └── mitre_mapper.py         # MITRE ATT&CK technique mapper
-│   └── database/
-│       ├── db_manager.py           # SQLite connection & batch helper manager
-│       └── queries.py              # Pre-defined security SQL queries
-│
-├── models/
-│   ├── isolation_forest.pkl        # Serialized Isolation Forest model
-│   └── scaler.pkl                  # StandardScaler model file
-│
-├── dashboard/
-│   ├── app.py                      # Streamlit main entrance
-│   ├── pages/
-│   ├── views/
-│   │   ├── overview.py             # Security Overview & KPI Monitor
-│   │   ├── analytics.py            # Threat Analytics & Behavioral Drift
-│   │   ├── users.py                # User Investigation & Radar Profile
-│   │   ├── alerts.py               # Alert Triage & Explainable Breakdown with SOAR triggers
-│   │   └── sql_workbench.py        # SQL Threat Hunting Workbench
-│   └── components/
-│       ├── charts.py               # Plotly graphics builders
-│       └── timeline.py             # SOC Investigation Timeline renderer
-│
-└── tests/
-    ├── conftest.py                 # Pytest configuration
-    ├── test_features.py            # Feature extraction unit tests
-    ├── test_ingestion.py           # Stream API ingestion unit tests
-    ├── test_rules.py               # Security rules unit tests
-    └── test_scoring.py             # Risk engine unit tests
+
+### Option B: Test using CERT Insider Threat Dataset (r4.2/r5.2)
+Download CERT r4.2 / r5.2 (`logon.csv`, `file.csv`, `device.csv`) and run:
+```bash
+python data/load_real_dataset.py --source cert --path /path/to/cert_directory
+python run_pipeline.py
+```
+
+### Option C: Test using Custom Real Enterprise Security Logs (CSV/JSON)
+```bash
+python data/load_real_dataset.py --source custom_csv --path /path/to/your_logs.csv
+python run_pipeline.py
 ```
 
 ---
@@ -115,8 +67,9 @@ behavioral-security-anomaly-detection/
 pip install -r requirements.txt
 ```
 
-### 2. Run Ingestion & Threat Detection Pipeline
+### 2. Fetch Real Production Telemetry & Run Detection Pipeline
 ```bash
+python data/fetch_real_public_dataset.py
 python run_pipeline.py
 ```
 
