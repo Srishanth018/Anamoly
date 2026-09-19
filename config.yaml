@@ -1,0 +1,73 @@
+# Configuration for Behavioral Security Log Anomaly Detection & Threat Analytics
+
+system:
+  app_name: "Behavioral Security Anomaly Detection & Threat Analytics"
+  version: "1.0.0"
+  db_path: "database/security.db"
+  models_dir: "models/"
+
+data:
+  synthetic_users_count: 50
+  synthetic_days: 30
+  raw_log_path: "data/raw/security_logs.csv"
+  processed_log_path: "data/processed/normalized_events.csv"
+
+baselines:
+  historical_days: 30
+  recent_days: 7
+  min_events_for_baseline: 10
+  z_score_threshold: 3.0
+
+detection:
+  rule_engine:
+    failed_login_threshold: 5
+    failed_login_window_minutes: 5
+    after_hours_start: 22 # 10 PM
+    after_hours_end: 6    # 6 AM
+    large_download_mb: 100 # 100 MB
+    mass_deletion_count: 15
+  
+  ml_engine:
+    contamination: 0.05
+    n_estimators: 100
+    random_state: 42
+
+risk_weights:
+  off_hours_login: 12
+  failed_login_burst: 18
+  unseen_ip: 15
+  unseen_device: 12
+  unusual_location: 15
+  sensitive_resource_access: 18
+  large_data_transfer: 20
+  privilege_escalation: 25
+  usb_activity: 15
+  mass_deletion: 22
+  ml_anomaly_high: 20
+  behavioral_drift_high: 15
+  peer_group_anomaly: 15
+  attack_sequence_bonus: 25
+
+severity_levels:
+  low:
+    min: 0
+    max: 25
+  medium:
+    min: 26
+    max: 50
+  high:
+    min: 51
+    max: 75
+  critical:
+    min: 76
+    max: 100
+
+mitre_attack:
+  T1078: "Valid Accounts - Suspicious login from unexpected IP/device/location or off-hours"
+  T1110: "Brute Force - Repeated login failures followed by authentication activity"
+  T1068: "Exploitation for Privilege Escalation - Execution of unauthorized admin/privilege events"
+  T1048: "Exfiltration Over Alternative Protocol / Mass Download - Unusually large file transfer volume"
+  T1083: "File and Directory Discovery - Rapid scanning or access of sensitive non-typical resources"
+  T1091: "Replication Through Removable Media - Unauthorized USB device connect and file access"
+  T1485: "Data Destruction - Mass file deletion activity outside baseline"
+  T1071: "Application Layer Protocol - Anomalous port or remote connection pattern"
